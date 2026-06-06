@@ -4,8 +4,7 @@ __pycache__/
 *.pyo
 .venv/
 
-# Data and logs
-data/
+# Logs
 *.log
 
 # MCP
