@@ -49,5 +49,19 @@ def get_total_spent_by_customer(customer_name: str) -> int:
     return total
 
 
+@mcp.tool()
+def get_total_sales() -> int:
+    """
+    Get the total amount spent by all customers combined
+    """
+    total = 0
+    with open("data/sales.csv", "r") as f:
+        reader = csv.reader(f)
+        next(reader)  # skip header
+        for _, paid in reader:
+            total += int(paid)
+    return total
+
+
 if __name__ == "__main__":
     mcp.run()
