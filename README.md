@@ -20,7 +20,7 @@ cd a-mcp-server
 2. Install dependencies:
 
 ```bash
-uv sync
+uv pip install mcp[cli]
 ```
 
 ## Connecting to Claude Code
