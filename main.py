@@ -63,5 +63,20 @@ def get_total_sales() -> int:
     return total
 
 
+@mcp.tool()
+def get_top_customers(n: int = 10) -> list[dict[str, int | str]]:
+    """
+    Get the top N customers by total spending
+    """
+    totals: dict[str, int] = {}
+    with open("data/sales.csv", "r") as f:
+        reader = csv.reader(f)
+        next(reader)  # skip header
+        for name, paid in reader:
+            totals[name] = totals.get(name, 0) + int(paid)
+    sorted_customers = sorted(totals.items(), key=lambda x: x[1], reverse=True)
+    return [{"name": name, "total_spent": total} for name, total in sorted_customers[:n]]
+
+
 if __name__ == "__main__":
     mcp.run()

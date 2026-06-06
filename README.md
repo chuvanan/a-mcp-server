@@ -23,6 +23,23 @@ cd a-mcp-server
 uv sync
 ```
 
+## Connecting to opencode
+
+Add the server to opencode via `opencode.jsonc` in the project root:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "sales-mcp-server": {
+      "type": "local",
+      "command": ["uv", "run", "main.py"],
+      "enabled": true
+    }
+  }
+}
+```
+
 ## Connecting to Claude Code
 
 Add the server to Claude Code by running this command from the project directory:
@@ -59,6 +76,7 @@ claude mcp list
 | `get_sales_from_customer(customer_name)` | Returns a list of individual sale amounts for a customer |
 | `get_total_spent_by_customer(customer_name)` | Returns the total amount spent by a customer |
 | `get_total_sales` | Returns the combined total spent by all customers |
+| `get_top_customers(n)` | Returns the top N customers by total spending (default: 10) |
 
 ## Example Usage
 
