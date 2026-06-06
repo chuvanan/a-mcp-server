@@ -22,6 +22,20 @@ def get_sales_from_customer(customer_name: str) -> list[int]:
 
 
 @mcp.tool()
+def get_all_customers() -> list[str]:
+    """
+    Get a list of all unique customer names
+    """
+    customers: set[str] = set()
+    with open("data/sales.csv", "r") as f:
+        reader = csv.reader(f)
+        next(reader)  # skip header
+        for name, _ in reader:
+            customers.add(name)
+    return sorted(customers)
+
+
+@mcp.tool()
 def get_total_spent_by_customer(customer_name: str) -> int:
     """
     Get the total amount spent by a given customer across all sales
@@ -35,5 +49,5 @@ def get_total_spent_by_customer(customer_name: str) -> int:
     return total
 
 
-if __name__ == "__main()__":
+if __name__ == "__main__":
     mcp.run()
