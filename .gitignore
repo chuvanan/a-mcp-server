@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+
+# Data and logs
+data/
+*.log
+
+# MCP
+.mcp.json
+
+# Misc
+*.zip
+*.pdf
+mcp-data-materials/
