@@ -31,6 +31,9 @@ class TestGetSalesFromCustomer:
     def test_returns_all_sales(self, sales_file):
         assert main.get_sales_from_customer("Alice") == [100, 300]
 
+    def test_lookup_is_case_insensitive_and_strips_input(self, sales_file):
+        assert main.get_sales_from_customer(" alice ") == [100, 300]
+
     def test_unknown_customer_raises(self, sales_file):
         with pytest.raises(ValueError, match="No sales found"):
             main.get_sales_from_customer("Nobody")
@@ -87,18 +90,25 @@ class TestLoadSales:
         with pytest.raises(FileNotFoundError, match="missing.csv"):
             main._load_sales()
 
+    def test_invalid_header_raises(self, sales_file):
+        sales_file.write_text("Name,Amount\nAlice,100\n")
+        with pytest.raises(ValueError, match="Expected CSV header"):
+            main._load_sales()
+
     def test_skips_malformed_rows(self, sales_file, caplog):
         sales_file.write_text(
             "Customer,Amount\n"
             "Alice,100\n"
             "BadRowWithOneColumn\n"
             "Bob,not_a_number\n"
+            ",100\n"
+            "Dave,-5\n"
             "Carol,50\n"
         )
         with caplog.at_level("WARNING"):
             records = main._load_sales()
         assert records == [("Alice", 100), ("Carol", 50)]
-        assert len(caplog.records) == 2
+        assert len(caplog.records) == 4
 
     def test_strips_whitespace_from_names(self, sales_file):
         sales_file.write_text("Customer,Amount\n Alice ,100\n")

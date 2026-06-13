@@ -11,6 +11,7 @@ __pycache__/
 .mcp.json
 
 # Misc
+amount_distribution.png
 *.zip
 *.pdf
 mcp-data-materials/

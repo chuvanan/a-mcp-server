@@ -7,11 +7,16 @@ from mcp.server.fastmcp import FastMCP
 logger = logging.getLogger(__name__)
 
 DATA_FILE = Path(__file__).parent / "data" / "sales.csv"
+EXPECTED_HEADER = ["Customer", "Amount"]
 
 mcp = FastMCP("Sales MCP Server")
 
-# Cache: (file mtime, parsed rows). Invalidated when the CSV is modified.
-_cache: tuple[float, list[tuple[str, int]]] | None = None
+# Cache: (file mtime ns, parsed rows). Invalidated when the CSV is modified.
+_cache: tuple[int, list[tuple[str, int]]] | None = None
+
+
+def _normalize_customer_name(customer_name: str) -> str:
+    return customer_name.strip().casefold()
 
 
 def _load_sales() -> list[tuple[str, int]]:
@@ -19,32 +24,49 @@ def _load_sales() -> list[tuple[str, int]]:
     Load sales records from the CSV file as (customer, amount) tuples.
 
     Results are cached and only re-read when the file's modification
-    time changes. Malformed rows are skipped with a warning.
+    time changes. Malformed data rows are skipped with a warning.
     """
     global _cache
 
     if not DATA_FILE.exists():
         raise FileNotFoundError(f"Sales data file not found: {DATA_FILE}")
 
-    mtime = DATA_FILE.stat().st_mtime
+    mtime = DATA_FILE.stat().st_mtime_ns
     if _cache is not None and _cache[0] == mtime:
         return _cache[1]
 
     records: list[tuple[str, int]] = []
-    with open(DATA_FILE, "r", newline="") as f:
+    with open(DATA_FILE, "r", newline="", encoding="utf-8") as f:
         reader = csv.reader(f)
-        next(reader, None)  # skip header
+        header = next(reader, None)
+        if header != EXPECTED_HEADER:
+            raise ValueError(
+                f"Expected CSV header {EXPECTED_HEADER!r}, got {header!r}"
+            )
+
         for line_num, row in enumerate(reader, start=2):
             if len(row) != 2:
                 logger.warning("Skipping malformed row %d: %r", line_num, row)
                 continue
             name, paid = row
+            name = name.strip()
+            if not name:
+                logger.warning("Skipping row %d with blank customer name", line_num)
+                continue
+
             try:
-                records.append((name.strip(), int(paid)))
+                amount = int(paid)
             except ValueError:
                 logger.warning(
                     "Skipping row %d with invalid amount: %r", line_num, row
                 )
+                continue
+
+            if amount < 0:
+                logger.warning("Skipping row %d with negative amount: %r", line_num, row)
+                continue
+
+            records.append((name, amount))
 
     _cache = (mtime, records)
     return records
@@ -55,7 +77,12 @@ def get_sales_from_customer(customer_name: str) -> list[int]:
     """
     Get a list of all sales totals for a given customer
     """
-    sales = [paid for name, paid in _load_sales() if name == customer_name]
+    normalized_customer_name = _normalize_customer_name(customer_name)
+    sales = [
+        paid
+        for name, paid in _load_sales()
+        if _normalize_customer_name(name) == normalized_customer_name
+    ]
     if not sales:
         raise ValueError(
             f"No sales found for customer {customer_name!r}. "
