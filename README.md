@@ -77,6 +77,15 @@ claude mcp list
 | `get_total_spent_by_customer(customer_name)` | Returns the total amount spent by a customer |
 | `get_total_sales` | Returns the combined total spent by all customers |
 | `get_top_customers(n)` | Returns the top N customers by total spending (default: 10) |
+| `get_customer_stats(customer_name)` | Returns sales count, mean amount, and total spent for a customer |
+
+Parsed CSV data is cached in memory and automatically re-read when `data/sales.csv` changes. Malformed rows are skipped with a logged warning, and unknown customer names raise a descriptive error.
+
+## Running Tests
+
+```bash
+uv run pytest
+```
 
 ## Example Usage
 
