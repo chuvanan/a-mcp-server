@@ -5,3 +5,12 @@ requires-python = ">=3.11"
 dependencies = [
     "mcp[cli]",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
